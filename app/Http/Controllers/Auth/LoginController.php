@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Auth;
 use Socialite;
+use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
@@ -38,5 +39,34 @@ class LoginController extends Controller
     {
         $this->middleware('guest', ['except' => 'logout']);
     }
+    public function issueToken(Request $request){
+    	try {
+			$data = $request->all();
+			$http = new \GuzzleHttp\Client;
+
+			$response = $http->post('http://localhost/laravel_passport/public/oauth/token', [
+			    'form_params' => [
+			        'grant_type' => 'password',
+			        'client_id' => '1',
+			        'client_secret' => 'RzyRi2vSZMsVZZd9IADI2Lys17tubFmRy0sETo2G',
+			        'username' => $data['username'],
+			        'password' => $data['password'],
+			        'scope' => '',
+			    ],
+			]);
+			if (Auth::attempt(['email' => $data['username'], 'password' => $data['password']])) {
+				$response = json_decode((string) $response->getBody(), true);
+				$response['user'] = Auth::user();
+				return response()->json($response, 200);
+        	}else {
+				$response = array("error" => "invalid_credentials","message" => "The user credentials were incorrect.");
+				return response()->json($response, 400);
+			}
+		} catch ( \Exception $e ) {
+			$response = array("error" => "invalid_credentials","message" => "The user credentials were incorrect.");
+			return response()->json($response, 400);
+		}
+		
+	}
 	
 }
