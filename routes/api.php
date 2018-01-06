@@ -20,4 +20,6 @@ Route::post('oauth/token', 'Auth\LoginController@issueToken');
 Route::post('auth/register', 'Auth\RegisterController@create');
 Route::get('auth/{provider}', 'Auth\RegisterController@redirectToProvider');
 Route::get('auth/{provider}/callback', 'Auth\RegisterController@handleProviderCallback');
+//get user details by token for social only
+Route::get('user_details/{provider}/{token}', 'Auth\RegisterController@getUserByToken');
 

@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Auth;
 use Socialite;
 use Illuminate\Http\Request;
+use App\User;
 
 class LoginController extends Controller
 {
@@ -56,7 +57,9 @@ class LoginController extends Controller
 			]);
 			if (Auth::attempt(['email' => $data['username'], 'password' => $data['password']])) {
 				$response = json_decode((string) $response->getBody(), true);
-				$response['user'] = Auth::user();
+					User::where('id', Auth::user()->id)->update(['deviceId' => $data['deviceId'], 'deviceType' => $data['deviceType'], 'udId' => $data['udId']] );
+				$response['user'] =  User::find(Auth::user()->id);
+				
 				return response()->json($response, 200);
         	}else {
 				$response = array("error" => "invalid_credentials","message" => "The user credentials were incorrect.");

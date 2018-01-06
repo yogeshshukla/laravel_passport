@@ -111,23 +111,32 @@ class RegisterController extends Controller
     {
 		//return Socialite::driver($provider)->user();
         $user = Socialite::driver($provider)->stateless()->user();
-
-
-        $authUser = $this->findOrCreateUser($user, $provider);
-        Auth::login($authUser, true);
-        return redirect($this->redirectTo);
+		
+		$authUser = $this->findOrCreateUser($user, $provider);
+        
+		$response['access_token'] = $user->token;
+		$response['refresh_token'] = $user->refreshToken;
+		$response['expires_in'] = $user->expiresIn;
+		$response['user'] = $authUser ;
+		return response()->json($response, 200);
     }
 	public function findOrCreateUser($user, $provider)
     {
         $authUser = User::where('provider_id', $user->id)->first();
         if ($authUser) {
+			$authUser->save();
             return $authUser;
         }
         return User::create([
             'name'     => $user->name,
             'email'    => $user->email,
             'provider' => $provider,
+			'LoginTypeId' => $provider,
             'provider_id' => $user->id
         ]);
     }
+	public function getUserByToken($provider, $token){
+		$user = Socialite::driver($provider)->userFromToken($token);
+		return response()->json($user, 200);
+	}
 }
